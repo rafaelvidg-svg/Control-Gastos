@@ -20,9 +20,17 @@ export default {
           800: '#3730a3',
           900: '#312e81',
         },
+        surface: {
+          DEFAULT: '#0f0f23', // dark background
+          light: '#ffffff',
+        },
+        accent: {
+          DEFAULT: '#7c3aed', // violet accent
+          dark: '#6366f1',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
       },
     },
   },

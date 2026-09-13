@@ -61,7 +61,7 @@ app.use((err, req, res, next) => {
 async function startServer() {
   await db.initDb();
   app.listen(PORT, () => {
-    console.log(` Servidor de Control de Gastos corriendo en http://localhost:${PORT}`);
+    console.log('Servidor de Control de Gastos está corriendo');
     console.log(` Modo de base de datos: ${db.isPgConnected() ? 'PostgreSQL Activo' : 'Fallback Local Activo'}`);
   });
 }
