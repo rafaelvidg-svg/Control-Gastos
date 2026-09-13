@@ -6,14 +6,24 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 // Configuración de PostgreSQL
+const isRemotePg = Boolean(
+  process.env.DATABASE_URL &&
+  !process.env.DATABASE_URL.includes('localhost') &&
+  !process.env.DATABASE_URL.includes('127.0.0.1')
+);
+
 const pgConfig = process.env.DATABASE_URL
-  ? { connectionString: process.env.DATABASE_URL }
+  ? {
+      connectionString: process.env.DATABASE_URL,
+      ssl: isRemotePg ? { rejectUnauthorized: false } : false,
+    }
   : {
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432', 10),
       user: process.env.DB_USER || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_NAME || 'control_gastos',
+      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
     };
 
 let pool = null;
@@ -39,7 +49,7 @@ function loadLocalData() {
         nombre: 'Usuario Demo',
         email: 'demo@gastos.com',
         // Hash de 'demo1234'
-        password_hash: '$2a$10$95j8UaVvU7/g2dJ.8/F6wOSxZtWb8h9QkZpP2zO9j2o9C5D6z.N.i',
+        password_hash: '$2a$10$KeS3KjhEaPsG4Z6Lj3xo7OrWUBxYSXNaabcKZWoJ8xUj2bACLef4e',
         limite_diario: 150.00,
         created_at: new Date().toISOString(),
       },
@@ -66,42 +76,61 @@ function loadLocalData() {
     nextGastoId: 6,
   };
 
-  fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(defaultData, null, 2));
+  try {
+    fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(defaultData, null, 2));
+  } catch (e) {
+    // Ignorar si el sistema de archivos es de solo lectura (como en Vercel Serverless)
+  }
   return defaultData;
 }
 
 let localData = loadLocalData();
 
 function saveLocalData() {
-  fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(localData, null, 2));
+  try {
+    fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(localData, null, 2));
+  } catch (e) {
+    // Ignorar si el sistema de archivos es de solo lectura (como en Vercel Serverless)
+  }
 }
 
-// Inicialización
+// Inicialización memoizada y segura para Serverless y Local
+let initPromise = null;
+
 async function initDb() {
-  try {
-    pool = new Pool(pgConfig);
-    const client = await pool.connect();
-    console.log(' Conectado exitosamente a PostgreSQL');
-    isPgConnected = true;
+  if (isPgConnected && pool) return true;
+  if (initPromise) return initPromise;
 
-    // Ejecutar esquemas
-    const schemaSql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-    await client.query(schemaSql);
+  initPromise = (async () => {
+    try {
+      pool = new Pool(pgConfig);
+      const client = await pool.connect();
+      console.log(' Conectado exitosamente a PostgreSQL');
+      isPgConnected = true;
 
-    // Ejecutar semillas si no hay categorías
-    const checkCats = await client.query('SELECT COUNT(*) FROM categorias');
-    if (parseInt(checkCats.rows[0].count, 10) === 0) {
-      const seedSql = fs.readFileSync(path.join(__dirname, 'seed.sql'), 'utf8');
-      await client.query(seedSql);
-      console.log(' Tablas inicializadas y datos semilla cargados en PostgreSQL');
+      // Ejecutar esquemas
+      const schemaSql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+      await client.query(schemaSql);
+
+      // Ejecutar semillas si no hay categorías
+      const checkCats = await client.query('SELECT COUNT(*) FROM categorias');
+      if (parseInt(checkCats.rows[0].count, 10) === 0) {
+        const seedSql = fs.readFileSync(path.join(__dirname, 'seed.sql'), 'utf8');
+        await client.query(seedSql);
+        console.log(' Tablas inicializadas y datos semilla cargados en PostgreSQL');
+      }
+
+      client.release();
+      return true;
+    } catch (err) {
+      console.warn(' No se pudo conectar a PostgreSQL (' + err.message + ').');
+      console.info(' Modo Resiliente Activado: Usando almacenamiento local/memoria.');
+      isPgConnected = false;
+      return false;
     }
+  })();
 
-    client.release();
-  } catch (err) {
-    console.warn(' No se pudo conectar a PostgreSQL localmente (' + err.message + ').');
-    console.info(' Modo Resiliente Activado: Usando almacenamiento JSON persistente local para desarrollo inmediato.');
-    isPgConnected = false;
-  }
+  return initPromise;
 }
 
 // Wrapper unificado de query para Express

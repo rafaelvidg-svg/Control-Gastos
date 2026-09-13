@@ -13,7 +13,9 @@ const PORT = process.env.PORT || 5000;
 // Middlewares globales
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  app.use(morgan('dev'));
+}
 
 // Importar rutas
 const authRoutes = require('./routes/auth.routes');
@@ -38,7 +40,7 @@ app.use('/api/reportes', reportesRoutes);
 app.use('/reportes', reportesRoutes);
 
 // Health check y estado del sistema
-app.get('/api/health', (req, res) => {
+app.get(['/api/health', '/health'], (req, res) => {
   res.json({
     status: 'OK',
     db_mode: db.isPgConnected() ? 'PostgreSQL' : 'Fallback Local Persistente',
@@ -64,4 +66,9 @@ async function startServer() {
   });
 }
 
-startServer();
+// Iniciar solo si se ejecuta directamente como script (no cuando se importa en Vercel Serverless)
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = app;

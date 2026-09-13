@@ -1,6 +1,6 @@
 // Capa de comunicación con la API REST del backend
 
-const API_BASE = ''; // Usa el proxy de Vite o rutas relativas
+const API_BASE = import.meta.env.VITE_API_BASE || ''; // Usa VITE_API_BASE si está configurada, o rutas relativas
 
 function getAuthHeader() {
   const token = localStorage.getItem('token');

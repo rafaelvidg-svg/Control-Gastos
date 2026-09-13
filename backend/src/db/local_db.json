@@ -4,7 +4,7 @@
       "id": 1,
       "nombre": "Usuario Demo",
       "email": "demo@gastos.com",
-      "password_hash": "$2a$10$95j8UaVvU7/g2dJ.8/F6wOSxZtWb8h9QkZpP2zO9j2o9C5D6z.N.i",
+      "password_hash": "$2a$10$KeS3KjhEaPsG4Z6Lj3xo7OrWUBxYSXNaabcKZWoJ8xUj2bACLef4e",
       "limite_diario": 150,
       "created_at": "2026-09-13T19:41:23.136Z"
     }

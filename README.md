@@ -72,7 +72,22 @@ Control-Gastos/
 
 ---
 
-## Guía de Instalación y Uso
+## 🚀 Despliegue Rápido en Vercel
+
+Este proyecto está **100% listo para desplegarse en Vercel** (Full-Stack o Frontend):
+
+1. Sube tu código a **GitHub**.
+2. Entra a [Vercel](https://vercel.com) e importa tu repositorio.
+3. Configura las variables de entorno en Vercel:
+   - `DATABASE_URL`: Cadena de conexión de PostgreSQL en la nube (ej. de [Neon.tech](https://neon.tech), [Supabase](https://supabase.com) o Vercel Postgres).
+   - `JWT_SECRET`: Clave secreta para JWT (opcional, tiene fallback seguro).
+4. Haz clic en **Deploy**.
+
+Para instrucciones detalladas paso a paso, consulta la guía completa en [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md).
+
+---
+
+## Guía de Instalación y Uso Local
 
 ### Requisitos Previos
 - **Node.js**: v18 o superior.
