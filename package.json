@@ -1,0 +1,13 @@
+{
+  "name": "control-gastos",
+  "version": "1.0.0",
+  "description": "Aplicación Web completa de Control de Gastos Personales (React + Express + PostgreSQL)",
+  "scripts": {
+    "dev:backend": "cd backend && npm start",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build"
+  },
+  "keywords": ["control-gastos", "presupuesto", "react", "express", "postgres"],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,154 @@
+{
+  "usuarios": [
+    {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@gastos.com",
+      "password_hash": "$2a$10$95j8UaVvU7/g2dJ.8/F6wOSxZtWb8h9QkZpP2zO9j2o9C5D6z.N.i",
+      "limite_diario": 150,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    }
+  ],
+  "categorias": [
+    {
+      "id": 1,
+      "nombre": "Alimentación",
+      "color": "#10B981",
+      "icono": "Utensils",
+      "usuario_id": null,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 2,
+      "nombre": "Transporte",
+      "color": "#3B82F6",
+      "icono": "Car",
+      "usuario_id": null,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 3,
+      "nombre": "Vivienda",
+      "color": "#8B5CF6",
+      "icono": "Home",
+      "usuario_id": null,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 4,
+      "nombre": "Entretenimiento",
+      "color": "#EC4899",
+      "icono": "Film",
+      "usuario_id": null,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 5,
+      "nombre": "Salud",
+      "color": "#EF4444",
+      "icono": "Activity",
+      "usuario_id": null,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 6,
+      "nombre": "Servicios",
+      "color": "#F59E0B",
+      "icono": "Zap",
+      "usuario_id": null,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 7,
+      "nombre": "Educación",
+      "color": "#06B6D4",
+      "icono": "BookOpen",
+      "usuario_id": null,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 8,
+      "nombre": "Otros",
+      "color": "#6B7280",
+      "icono": "MoreHorizontal",
+      "usuario_id": null,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 9,
+      "nombre": "Gimnasio y Deporte",
+      "color": "#10B981",
+      "icono": "Tag",
+      "usuario_id": null,
+      "created_at": "2026-09-13T19:47:03.473Z"
+    }
+  ],
+  "gastos": [
+    {
+      "id": 7,
+      "monto": 85.5,
+      "descripcion": "Compra de despensa semanal",
+      "fecha": "2026-09-13T00:00:00.000Z",
+      "categoria_id": 1,
+      "usuario_id": null,
+      "created_at": "2026-09-13T19:46:35.986Z"
+    },
+    {
+      "id": 6,
+      "monto": 55.2,
+      "descripcion": "Prueba de gasto",
+      "fecha": "2026-09-13T19:41:48.380Z",
+      "categoria_id": 1,
+      "usuario_id": null,
+      "created_at": "2026-09-13T19:41:48.380Z"
+    },
+    {
+      "id": 1,
+      "monto": 45.5,
+      "descripcion": "Supermercado semanal",
+      "fecha": "2026-09-13T17:41:23.136Z",
+      "categoria_id": 1,
+      "usuario_id": 1,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 2,
+      "monto": 12,
+      "descripcion": "Transporte público / Combustible",
+      "fecha": "2026-09-13T14:41:23.136Z",
+      "categoria_id": 2,
+      "usuario_id": 1,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 3,
+      "monto": 35,
+      "descripcion": "Cena con amigos",
+      "fecha": "2026-09-12T17:41:23.136Z",
+      "categoria_id": 4,
+      "usuario_id": 1,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 4,
+      "monto": 80,
+      "descripcion": "Factura de luz e internet",
+      "fecha": "2026-09-10T19:41:23.136Z",
+      "categoria_id": 6,
+      "usuario_id": 1,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    },
+    {
+      "id": 5,
+      "monto": 25,
+      "descripcion": "Farmacia y vitaminas",
+      "fecha": "2026-09-08T19:41:23.136Z",
+      "categoria_id": 5,
+      "usuario_id": 1,
+      "created_at": "2026-09-13T19:41:23.136Z"
+    }
+  ],
+  "nextUserId": 2,
+  "nextCatId": 10,
+  "nextGastoId": 8
+}
