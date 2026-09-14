@@ -3,12 +3,46 @@ import { Sliders, X, DollarSign, Check, Info } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function LimiteModal({ isOpen, onClose }) {
-  const { dailyLimit, updateLimit, dailySpent } = useAuth();
+  const { dailyLimit, updateLimit, dailySpent, user } = useAuth();
   const [val, setVal] = useState(dailyLimit.toString());
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   if (!isOpen) return null;
+
+  // Si no hay sesión, mostrar mensaje de inicio de sesión requerido
+  if (!user) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-slate-200 relative">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <Sliders className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900 text-lg">Límite Diario</h3>
+              <p className="text-xs text-slate-500">Requiere inicio de sesión</p>
+            </div>
+          </div>
+          <p className="text-sm text-slate-600 text-center py-4">
+            Debes iniciar sesión para configurar y guardar tu límite diario de gastos.
+          </p>
+          <button
+            onClick={onClose}
+            className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleSave = async (e) => {
     e.preventDefault();

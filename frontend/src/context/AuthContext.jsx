@@ -57,6 +57,7 @@ export function AuthProvider({ children }) {
     setToken(null);
     setUser(null);
     setDailyLimit(100);
+    setDailySpent(0);
     setAlertInfo(null);
   };
 

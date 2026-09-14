@@ -179,7 +179,29 @@ export default function GastosView({ categorias = [], onGastoChange, onOpenAuth 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* Pantalla de Login Requerido (si no hay sesión) */}
+      {!user ? (
+        <div className="flex flex-col items-center justify-center py-24 space-y-6">
+          <div className="w-20 h-20 rounded-3xl bg-indigo-50 text-indigo-500 flex items-center justify-center shadow-sm">
+            <Lock className="w-10 h-10" />
+          </div>
+          <div className="text-center space-y-2">
+            <h2 className="text-xl font-bold text-slate-800">Acceso Personal Requerido</h2>
+            <p className="text-sm text-slate-500 max-w-sm mx-auto">
+              Tus gastos son privados y personales. Inicia sesión con tu cuenta para registrar y ver tu historial.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            className="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-indigo-200 transition-all hover:scale-105"
+          >
+            <LogIn className="w-5 h-5" />
+            <span>Iniciar Sesión / Registrarme</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Formulario de Registro (4 columnas en pantallas grandes) */}
         <div className="lg:col-span-4">
@@ -301,39 +323,13 @@ export default function GastosView({ categorias = [], onGastoChange, onOpenAuth 
                 </div>
               </div>
 
-              {!user && (
-                <div className="p-3 bg-indigo-50/80 border border-indigo-100 rounded-xl text-xs text-indigo-800 flex items-center justify-between gap-2">
-                  <span>Debes iniciar sesión para que el gasto quede en tu cuenta.</span>
-                  <button
-                    type="button"
-                    onClick={onOpenAuth}
-                    className="font-bold underline text-indigo-600 hover:text-indigo-800 shrink-0"
-                  >
-                    Ingresar
-                  </button>
-                </div>
-              )}
-
               <button
                 type="submit"
                 disabled={submitting}
-                className={`w-full mt-2 py-3 px-4 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 disabled:opacity-60 ${
-                  user
-                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200 hover:shadow-lg'
-                    : 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-200'
-                }`}
+                className="w-full mt-2 py-3 px-4 text-white font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200 hover:shadow-lg transition-all flex items-center justify-center space-x-2 disabled:opacity-60"
               >
-                {user ? (
-                  <>
-                    <PlusCircle className="w-5 h-5" />
-                    <span>{submitting ? 'Registrando...' : 'Registrar Gasto'}</span>
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="w-5 h-5" />
-                    <span>Iniciar Sesión para Registrar</span>
-                  </>
-                )}
+                <PlusCircle className="w-5 h-5" />
+                <span>{submitting ? 'Registrando...' : 'Registrar Gasto'}</span>
               </button>
             </form>
           </div>
@@ -423,27 +419,7 @@ export default function GastosView({ categorias = [], onGastoChange, onOpenAuth 
               )}
             </div>
 
-            {!user ? (
-              <div className="py-16 text-center space-y-4 px-6">
-                <div className="w-12 h-12 mx-auto rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                  <Lock className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-800 text-base">Inicia sesión para ver tus gastos</h4>
-                  <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                    Tus gastos son personales y privados. Ingresa con tu cuenta personal para ver tu historial de gastos.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={onOpenAuth}
-                  className="inline-flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-200 transition"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>Iniciar Sesión / Registrarme</span>
-                </button>
-              </div>
-            ) : loading ? (
+            {loading ? (
               <div className="py-12 text-center text-slate-400 text-sm">Cargando registros...</div>
             ) : gastos.length === 0 ? (
               <div className="py-16 text-center text-slate-400 space-y-3">
@@ -522,7 +498,8 @@ export default function GastosView({ categorias = [], onGastoChange, onOpenAuth 
             )}
           </div>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
