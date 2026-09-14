@@ -141,7 +141,8 @@ export const api = {
 
   // Reportes
   async getReportes(tipo = 'mensual') {
-    const res = await fetch(`${API_BASE}/reportes?tipo=${tipo}`, {
+    const offset = new Date().getTimezoneOffset();
+    const res = await fetch(`${API_BASE}/reportes?tipo=${tipo}&offset=${offset}`, {
       headers: { ...getAuthHeader() },
     });
     if (!res.ok) throw new Error('Error al generar reportes');

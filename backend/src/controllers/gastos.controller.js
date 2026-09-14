@@ -87,8 +87,20 @@ async function createGasto(req, res) {
       return res.status(400).json({ error: 'El monto es obligatorio y debe ser mayor que 0' });
     }
 
-    // Fecha actual por defecto
-    const gastoFecha = fecha ? new Date(fecha).toISOString() : new Date().toISOString();
+    // Fecha por defecto o parseo seguro si viene en formato YYYY-MM-DD
+    let gastoFecha;
+    if (fecha) {
+      if (typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecha.trim())) {
+        // Viene solo fecha sin hora (ej: 2026-09-13), asignar mediodía UTC o crear con la hora actual
+        const [y, m, d] = fecha.trim().split('-').map(Number);
+        const now = new Date();
+        gastoFecha = new Date(Date.UTC(y, m - 1, d, 12, 0, 0)).toISOString();
+      } else {
+        gastoFecha = new Date(fecha).toISOString();
+      }
+    } else {
+      gastoFecha = new Date().toISOString();
+    }
     const catId = categoria_id ? parseInt(categoria_id, 10) : null;
     const parsedMonto = parseFloat(monto);
 

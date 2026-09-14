@@ -66,11 +66,15 @@ export default function GastosView({ categorias = [], onGastoChange, onOpenAuth 
       const data = await api.getGastos(filtros);
       setGastos(data);
 
-      // Calcular gastos del día actual para verificar contra el límite
-      const todayStr = getTodayString();
+      // Calcular gastos del día actual para verificar contra el límite (en hora local)
+      const today = new Date();
       const gastosHoy = data.filter((g) => {
-        const gDate = new Date(g.fecha).toISOString().split('T')[0];
-        return gDate === todayStr;
+        const d = new Date(g.fecha);
+        return (
+          d.getFullYear() === today.getFullYear() &&
+          d.getMonth() === today.getMonth() &&
+          d.getDate() === today.getDate()
+        );
       });
       const totalHoy = gastosHoy.reduce((acc, curr) => acc + parseFloat(curr.monto || 0), 0);
       checkDailyLimitAlert(totalHoy, dailyLimit);
@@ -106,11 +110,24 @@ export default function GastosView({ categorias = [], onGastoChange, onOpenAuth 
       setErrorMsg('');
       setSuccessMsg('');
 
+      // Construir la fecha exacta en hora local del usuario para evitar desfases UTC
+      let fechaEnvio;
+      if (formData.fecha) {
+        // formData.fecha es 'YYYY-MM-DD'
+        const [y, m, d] = formData.fecha.split('-').map(Number);
+        const now = new Date();
+        // Crear fecha local manteniendo la hora actual
+        const fechaLocal = new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds());
+        fechaEnvio = fechaLocal.toISOString();
+      } else {
+        fechaEnvio = new Date().toISOString();
+      }
+
       const response = await api.createGasto({
         monto: parseFloat(formData.monto),
         descripcion: formData.descripcion,
         categoria_id: formData.categoria_id ? parseInt(formData.categoria_id, 10) : null,
-        fecha: formData.fecha || new Date().toISOString(),
+        fecha: fechaEnvio,
       });
 
       setSuccessMsg(`¡Gasto registrado exitosamente para ${user.nombre}!`);

@@ -11,35 +11,79 @@ function toLocalISOString(date) {
   );
 }
 
-// Función auxiliar para calcular rangos de fechas según tipo (en hora LOCAL)
-function getDateRange(tipo) {
+// Función auxiliar para calcular rangos de fechas según tipo considerando el timezoneOffset del cliente
+function getDateRange(tipo, clientOffsetMinutes = null) {
+  // now en la hora del cliente: si el cliente envía su offset en minutos (getTimezoneOffset()),
+  // ajustamos para que la fecha coincida exactamente con la suya
   const now = new Date();
-  // Usamos getFullYear/Month/Date que devuelven valores en hora local
+  if (clientOffsetMinutes !== null && !isNaN(clientOffsetMinutes)) {
+    // clientOffsetMinutes es en minutos (ej: 360 para UTC-6)
+    // El timestamp UTC del cliente equivalente:
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const clientNow = new Date(utcTime - (clientOffsetMinutes * 60000));
+    
+    let y = clientNow.getFullYear();
+    let m = clientNow.getMonth();
+    let d = clientNow.getDate();
+
+    let startLocal, endLocal;
+
+    switch (tipo) {
+      case 'diario':
+        startLocal = new Date(y, m, d, 0, 0, 0, 0);
+        endLocal = new Date(y, m, d, 23, 59, 59, 999);
+        break;
+      case 'semanal': {
+        const day = clientNow.getDay();
+        const diff = d - day + (day === 0 ? -6 : 1);
+        startLocal = new Date(y, m, diff, 0, 0, 0, 0);
+        endLocal = new Date(y, m, d, 23, 59, 59, 999);
+        break;
+      }
+      case 'mensual':
+        startLocal = new Date(y, m, 1, 0, 0, 0, 0);
+        endLocal = new Date(y, m + 1, 0, 23, 59, 59, 999);
+        break;
+      case 'anual':
+        startLocal = new Date(y, 0, 1, 0, 0, 0, 0);
+        endLocal = new Date(y, 11, 31, 23, 59, 59, 999);
+        break;
+      default:
+        startLocal = new Date(y, m, 1, 0, 0, 0, 0);
+        endLocal = new Date(y, m + 1, 0, 23, 59, 59, 999);
+        break;
+    }
+
+    // Convertir de vuelta a timestamps UTC absolutos sumando el offset del cliente
+    const startUtc = new Date(startLocal.getTime() + (clientOffsetMinutes * 60000));
+    const endUtc = new Date(endLocal.getTime() + (clientOffsetMinutes * 60000));
+    return { startDate: startUtc, endDate: endUtc };
+  }
+
+  // Fallback si no viene offset:
   let startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-  let endDate   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  let endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
   switch (tipo) {
     case 'diario':
-      // startDate ya está configurada como inicio del día local
       break;
     case 'semanal': {
-      // Inicio de la semana actual (Lunes) en hora local
-      const day = now.getDay(); // 0=Dom, 1=Lun … 6=Sáb
+      const day = now.getDay();
       const diff = now.getDate() - day + (day === 0 ? -6 : 1);
       startDate = new Date(now.getFullYear(), now.getMonth(), diff, 0, 0, 0, 0);
       break;
     }
     case 'mensual':
-      // Inicio del mes actual
       startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
       break;
     case 'anual':
-      // Inicio del año actual
       startDate = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+      endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
       break;
     default:
-      // Por defecto mensual
       startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
       break;
   }
 
@@ -49,13 +93,14 @@ function getDateRange(tipo) {
 async function getReportes(req, res) {
   try {
     const tipo = (req.query.tipo || 'mensual').toLowerCase();
+    const clientOffset = req.query.offset !== undefined ? parseInt(req.query.offset, 10) : null;
     const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({ error: 'Debes iniciar sesión para consultar tus reportes' });
     }
 
-    const { startDate, endDate } = getDateRange(tipo);
+    const { startDate, endDate } = getDateRange(tipo, clientOffset);
 
     // 1. Obtener todos los gastos del período pertenecientes exclusivamente al usuario
     const gastosRes = await db.query(
