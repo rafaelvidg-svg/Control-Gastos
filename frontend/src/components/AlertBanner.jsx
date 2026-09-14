@@ -10,17 +10,17 @@ export default function AlertBanner({ onOpenLimit }) {
   const isExceeded = alertInfo.excedido;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mt-3 sm:mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
       <div
-        className={`rounded-2xl p-4 shadow-sm border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+        className={`rounded-2xl p-3.5 sm:p-4 shadow-sm border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
           isExceeded
             ? 'bg-rose-50 border-rose-200 text-rose-900'
             : 'bg-amber-50 border-amber-200 text-amber-900'
         }`}
       >
-        <div className="flex items-center space-x-3">
+        <div className="flex items-start sm:items-center space-x-3 min-w-0 flex-1">
           <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 ${
               isExceeded ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'
             }`}
           >
@@ -30,13 +30,13 @@ export default function AlertBanner({ onOpenLimit }) {
               <AlertTriangle className="w-5 h-5" />
             )}
           </div>
-          <div>
-            <h4 className="font-bold text-sm">
+          <div className="min-w-0 flex-1">
+            <h4 className="font-bold text-xs sm:text-sm leading-snug">
               {isExceeded
                 ? '¡Atención! Has superado tu límite diario de gastos'
                 : 'Aviso de presupuesto: Te estás acercando a tu límite diario'}
             </h4>
-            <p className="text-xs opacity-90 mt-0.5">
+            <p className="text-xs opacity-90 mt-0.5 break-words">
               {isExceeded ? (
                 <>
                   Has gastado <strong className="font-semibold">${alertInfo.gastado.toFixed(2)}</strong> hoy.
@@ -53,7 +53,7 @@ export default function AlertBanner({ onOpenLimit }) {
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 self-end sm:self-center">
+        <div className="flex items-center space-x-2 self-stretch sm:self-center justify-between sm:justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5">
           <button
             onClick={onOpenLimit}
             className={`text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition ${

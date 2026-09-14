@@ -286,46 +286,52 @@ export default function ReportesView({ onOpenAuth }) {
     scales: {
       x: {
         grid: { display: false },
-        ticks: { font: { size: 11, family: 'Inter' } },
+        ticks: {
+          font: { size: 10, family: 'Inter' },
+          maxRotation: 45,
+          minRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 8,
+        },
       },
       y: {
         beginAtZero: true,
         grid: { color: '#f1f5f9' },
         ticks: {
           callback: (val) => `$${val}`,
-          font: { size: 11, family: 'Inter' },
+          font: { size: 10, family: 'Inter' },
         },
       },
     },
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8">
       
       {/* Encabezado y Filtros */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center space-x-2.5">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
               <span>Reportes y Analítica Financiera</span>
-              <Sparkles className="w-5 h-5 text-indigo-500" />
+              <Sparkles className="w-5 h-5 text-indigo-500 shrink-0" />
             </h1>
             {user && (
-              <span className="text-[11px] font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-md">
+              <span className="text-[10px] sm:text-[11px] font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md truncate max-w-[120px]">
                 {user.nombre}
               </span>
             )}
           </div>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Visualiza métricas agregadas, comparativas temporales y distribución porcentual de tus gastos.
           </p>
         </div>
 
         {/* Botones de Selección de Período y Exportación */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
           
           {/* Selector de Período */}
-          <div className="flex bg-slate-200/80 p-1 rounded-xl border border-slate-300/60 shadow-inner">
+          <div className="flex justify-between sm:justify-start bg-slate-200/80 p-1 rounded-xl border border-slate-300/60 shadow-inner">
             {[
               { id: 'diario', label: 'Diario' },
               { id: 'semanal', label: 'Semanal' },
@@ -335,7 +341,7 @@ export default function ReportesView({ onOpenAuth }) {
               <button
                 key={p.id}
                 onClick={() => setTipo(p.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-center ${
                   tipo === p.id
                     ? 'bg-white text-indigo-600 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
@@ -347,33 +353,35 @@ export default function ReportesView({ onOpenAuth }) {
           </div>
 
           {/* Botones de Exportar */}
-          <button
-            onClick={exportPDF}
-            className="flex items-center space-x-1.5 px-3 py-2 bg-white border border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-600 rounded-xl text-xs font-bold shadow-sm transition"
-            title="Exportar reporte en formato PDF"
-          >
-            <FileText className="w-4 h-4 text-rose-500" />
-            <span>PDF</span>
-          </button>
+          <div className="flex items-center gap-2 justify-end">
+            <button
+              onClick={exportPDF}
+              className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3 py-2 bg-white border border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-600 rounded-xl text-xs font-bold shadow-sm transition"
+              title="Exportar reporte en formato PDF"
+            >
+              <FileText className="w-4 h-4 text-rose-500" />
+              <span>PDF</span>
+            </button>
 
-          <button
-            onClick={exportExcel}
-            className="flex items-center space-x-1.5 px-3 py-2 bg-white border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-600 rounded-xl text-xs font-bold shadow-sm transition"
-            title="Exportar reporte en formato Excel"
-          >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
-            <span>Excel</span>
-          </button>
+            <button
+              onClick={exportExcel}
+              className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3 py-2 bg-white border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-600 rounded-xl text-xs font-bold shadow-sm transition"
+              title="Exportar reporte en formato Excel"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
+              <span>Excel</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {!user ? (
-        <div className="py-20 text-center space-y-4 max-w-md mx-auto bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+        <div className="py-12 sm:py-20 text-center space-y-4 max-w-md mx-auto bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
           <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
             <Lock className="w-7 h-7" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-800 text-lg">Inicia sesión para ver tus reportes</h3>
+            <h3 className="font-bold text-slate-800 text-base sm:text-lg">Inicia sesión para ver tus reportes</h3>
             <p className="text-xs text-slate-500 mt-1">
               Las estadísticas y gráficos financieros se calculan exclusivamente a partir de tus gastos personales.
             </p>
@@ -396,12 +404,12 @@ export default function ReportesView({ onOpenAuth }) {
           {error}
         </div>
       ) : reportData ? (
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           
           {/* Tarjetas KPI de Resumen */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             
-            <div className="glass-card rounded-2xl p-5 border border-slate-200">
+            <div className="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   Total Gastado
@@ -410,15 +418,15 @@ export default function ReportesView({ onOpenAuth }) {
                   <DollarSign className="w-4 h-4" />
                 </div>
               </div>
-              <div className="mt-3">
-                <span className="text-2xl font-black text-slate-900">
+              <div className="mt-2.5">
+                <span className="text-xl sm:text-2xl font-black text-slate-900 truncate block">
                   ${reportData.resumen.total_general.toFixed(2)}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1">Período {tipo}</p>
             </div>
 
-            <div className="glass-card rounded-2xl p-5 border border-slate-200">
+            <div className="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   Transacciones
@@ -427,15 +435,15 @@ export default function ReportesView({ onOpenAuth }) {
                   <Hash className="w-4 h-4" />
                 </div>
               </div>
-              <div className="mt-3">
-                <span className="text-2xl font-black text-slate-900">
+              <div className="mt-2.5">
+                <span className="text-xl sm:text-2xl font-black text-slate-900 truncate block">
                   {reportData.resumen.total_registros}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1">Registros en el período</p>
             </div>
 
-            <div className="glass-card rounded-2xl p-5 border border-slate-200">
+            <div className="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   Promedio por Gasto
@@ -444,15 +452,15 @@ export default function ReportesView({ onOpenAuth }) {
                   <TrendingUp className="w-4 h-4" />
                 </div>
               </div>
-              <div className="mt-3">
-                <span className="text-2xl font-black text-slate-900">
+              <div className="mt-2.5">
+                <span className="text-xl sm:text-2xl font-black text-slate-900 truncate block">
                   ${reportData.resumen.promedio_por_gasto.toFixed(2)}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1">Ticket promedio</p>
             </div>
 
-            <div className="glass-card rounded-2xl p-5 border border-slate-200">
+            <div className="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   Gasto Mayor
@@ -461,8 +469,8 @@ export default function ReportesView({ onOpenAuth }) {
                   <TrendingDown className="w-4 h-4" />
                 </div>
               </div>
-              <div className="mt-3">
-                <span className="text-2xl font-black text-slate-900">
+              <div className="mt-2.5">
+                <span className="text-xl sm:text-2xl font-black text-slate-900 truncate block">
                   ${reportData.resumen.gasto_maximo.toFixed(2)}
                 </span>
               </div>
@@ -471,20 +479,20 @@ export default function ReportesView({ onOpenAuth }) {
           </div>
 
           {/* Gráficas Chart.js */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
             
             {/* Gráfico de Evolución Temporal (Barras - 7 columnas) */}
-            <div className="lg:col-span-7 glass-panel rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div className="lg:col-span-7 glass-panel rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-2">
-                  <BarChart3 className="w-5 h-5 text-indigo-600" />
+                  <BarChart3 className="w-5 h-5 text-indigo-600 shrink-0" />
                   <h3 className="text-sm font-bold text-slate-800">
                     Evolución de Gastos ({tipo.toUpperCase()})
                   </h3>
                 </div>
               </div>
 
-              <div className="h-72 w-full">
+              <div className="h-64 sm:h-72 w-full">
                 {reportData.resumen.total_registros === 0 ? (
                   <div className="h-full flex items-center justify-center text-slate-400 text-xs font-medium">
                     No hay suficientes datos para graficar este período.
@@ -496,17 +504,17 @@ export default function ReportesView({ onOpenAuth }) {
             </div>
 
             {/* Gráfico de Desglose por Categorías (Dona - 5 columnas) */}
-            <div className="lg:col-span-5 glass-panel rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div className="lg:col-span-5 glass-panel rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-2">
-                  <PieIcon className="w-5 h-5 text-indigo-600" />
+                  <PieIcon className="w-5 h-5 text-indigo-600 shrink-0" />
                   <h3 className="text-sm font-bold text-slate-800">
                     Desglose por Categoría
                   </h3>
                 </div>
               </div>
 
-              <div className="h-72 w-full flex items-center justify-center">
+              <div className="h-64 sm:h-72 w-full flex items-center justify-center">
                 {reportData.desglose_categorias.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-slate-400 text-xs font-medium">
                     Sin gastos categorizados en este período.
@@ -520,19 +528,19 @@ export default function ReportesView({ onOpenAuth }) {
 
           {/* Tabla de Desglose Detallado */}
           <div className="glass-panel rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-800 text-sm">Resumen Detallado por Categoría</h3>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-600">
+              <table className="w-full text-left text-sm text-slate-600 min-w-[480px]">
                 <thead className="bg-slate-50 text-[11px] uppercase font-bold text-slate-500 tracking-wider">
                   <tr>
-                    <th className="px-6 py-3">Categoría</th>
-                    <th className="px-6 py-3">N° Gastos</th>
-                    <th className="px-6 py-3">Total Acumulado</th>
-                    <th className="px-6 py-3">Porcentaje</th>
-                    <th className="px-6 py-3">Barra de Progreso</th>
+                    <th className="px-4 py-3 sm:px-6">Categoría</th>
+                    <th className="px-4 py-3 sm:px-6">N° Gastos</th>
+                    <th className="px-4 py-3 sm:px-6">Total Acumulado</th>
+                    <th className="px-4 py-3 sm:px-6">Porcentaje</th>
+                    <th className="px-4 py-3 sm:px-6">Barra de Progreso</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -545,21 +553,21 @@ export default function ReportesView({ onOpenAuth }) {
                   ) : (
                     reportData.desglose_categorias.map((cat, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/60 transition">
-                        <td className="px-6 py-3.5 flex items-center space-x-2.5 font-bold text-slate-800">
+                        <td className="px-4 py-3 sm:px-6 sm:py-3.5 flex items-center space-x-2.5 font-bold text-slate-800">
                           <span
-                            className="w-3 h-3 rounded-full"
+                            className="w-3 h-3 rounded-full shrink-0"
                             style={{ backgroundColor: cat.color || '#6366F1' }}
                           />
-                          <span>{cat.nombre}</span>
+                          <span className="truncate">{cat.nombre}</span>
                         </td>
-                        <td className="px-6 py-3.5">{cat.cantidad}</td>
-                        <td className="px-6 py-3.5 font-bold text-slate-900">
+                        <td className="px-4 py-3 sm:px-6 sm:py-3.5">{cat.cantidad}</td>
+                        <td className="px-4 py-3 sm:px-6 sm:py-3.5 font-bold text-slate-900">
                           ${cat.total.toFixed(2)}
                         </td>
-                        <td className="px-6 py-3.5 font-semibold text-indigo-600">
+                        <td className="px-4 py-3 sm:px-6 sm:py-3.5 font-semibold text-indigo-600">
                           {cat.porcentaje}%
                         </td>
-                        <td className="px-6 py-3.5 w-48">
+                        <td className="px-4 py-3 sm:px-6 sm:py-3.5 w-36 sm:w-48">
                           <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                             <div
                               className="h-2 rounded-full"

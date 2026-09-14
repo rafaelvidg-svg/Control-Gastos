@@ -108,26 +108,26 @@ export default function CategoriasView({ categorias = [], onCategoriasChange }) 
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8">
       
       {/* Encabezado */}
       <div>
-        <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+        <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
           <span>Gestión de Categorías</span>
-          <Layers className="w-5 h-5 text-indigo-500" />
+          <Layers className="w-5 h-5 text-indigo-500 shrink-0" />
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
           Crea, personaliza y organiza las etiquetas con las que agrupas tus gastos para análisis detallados.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
         
         {/* Formulario de Creación (4 columnas) */}
         <div className="lg:col-span-4">
-          <div className="glass-card rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div className="glass-card rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200">
             <div className="flex items-center space-x-2.5 pb-4 border-b border-slate-100 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                 <Plus className="w-5 h-5" />
               </div>
               <h2 className="text-base font-bold text-slate-800">Nueva Categoría</h2>
@@ -171,14 +171,14 @@ export default function CategoriasView({ categorias = [], onCategoriasChange }) 
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
                   Color Identificador
                 </label>
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-5 sm:flex sm:flex-wrap gap-2.5 max-w-[260px] sm:max-w-none">
                   {PRESET_COLORS.map((c) => (
                     <button
                       key={c}
                       type="button"
                       onClick={() => setSelectedColor(c)}
                       className={`w-7 h-7 rounded-full transition-transform ${
-                        selectedColor === c ? 'scale-125 ring-2 ring-offset-2 ring-indigo-500' : 'hover:scale-110'
+                        selectedColor === c ? 'scale-110 ring-2 ring-offset-2 ring-indigo-500' : 'hover:scale-105'
                       }`}
                       style={{ backgroundColor: c }}
                     />
@@ -189,7 +189,7 @@ export default function CategoriasView({ categorias = [], onCategoriasChange }) 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-4 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 hover:shadow-lg transition-all flex items-center justify-center space-x-2 disabled:opacity-60"
+                className="w-full mt-4 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 hover:shadow-lg transition-all flex items-center justify-center space-x-2 disabled:opacity-60 text-sm"
               >
                 <Plus className="w-5 h-5" />
                 <span>{loading ? 'Creando...' : 'Crear Categoría'}</span>
@@ -201,52 +201,52 @@ export default function CategoriasView({ categorias = [], onCategoriasChange }) 
         {/* Listado de Categorías (8 columnas) */}
         <div className="lg:col-span-8">
           <div className="glass-panel rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-800 text-sm">
                 Categorías Disponibles ({categorias.length})
               </h3>
             </div>
 
             {categorias.length === 0 ? (
-              <div className="py-16 text-center text-slate-400 space-y-2">
+              <div className="py-16 text-center text-slate-400 space-y-2 px-4">
                 <Palette className="w-10 h-10 mx-auto opacity-40 text-slate-400" />
                 <p className="text-sm font-medium">No hay categorías registradas.</p>
               </div>
             ) : (
-              <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {categorias.map((cat) => {
                   const isEditing = editingId === cat.id;
 
                   return (
                     <div
                       key={cat.id}
-                      className="p-4 rounded-xl border border-slate-200 bg-white/80 hover:shadow-sm transition-all flex items-center justify-between"
+                      className="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-white/80 hover:shadow-sm transition-all flex items-center justify-between gap-2"
                     >
                       {isEditing ? (
                         /* Modo Edición */
-                        <div className="flex-1 flex items-center space-x-2 mr-2">
+                        <div className="flex-1 flex items-center space-x-2 mr-1 min-w-0">
                           <input
                             type="color"
                             value={editColor}
                             onChange={(e) => setEditColor(e.target.value)}
-                            className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent"
+                            className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent shrink-0"
                           />
                           <input
                             type="text"
                             value={editNombre}
                             onChange={(e) => setEditNombre(e.target.value)}
-                            className="flex-1 px-2 py-1 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="flex-1 min-w-0 px-2 py-1 border border-slate-300 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
                           />
                           <button
                             onClick={() => handleUpdate(cat.id)}
-                            className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                            className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg shrink-0"
                             title="Guardar"
                           >
                             <Check className="w-4 h-4" />
                           </button>
                           <button
                             onClick={cancelEdit}
-                            className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg"
+                            className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg shrink-0"
                             title="Cancelar"
                           >
                             <X className="w-4 h-4" />
@@ -255,17 +255,17 @@ export default function CategoriasView({ categorias = [], onCategoriasChange }) 
                       ) : (
                         /* Modo Visualización */
                         <>
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-3 min-w-0 flex-1">
                             <div
-                              className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm text-sm"
+                              className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm text-sm shrink-0"
                               style={{ backgroundColor: cat.color || '#3B82F6' }}
                             >
                               {cat.nombre.charAt(0).toUpperCase()}
                             </div>
-                            <span className="font-bold text-slate-800 text-sm">{cat.nombre}</span>
+                            <span className="font-bold text-slate-800 text-sm truncate" title={cat.nombre}>{cat.nombre}</span>
                           </div>
 
-                          <div className="flex items-center space-x-1">
+                          <div className="flex items-center space-x-1 shrink-0">
                             <button
                               onClick={() => startEdit(cat)}
                               className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
