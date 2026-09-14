@@ -1,5 +1,16 @@
 const db = require('../db');
 
+// Convierte un Date a string ISO sin aplicar offset UTC
+// Así las fechas se guardan y comparan siempre en hora local
+function toLocalISOString(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.` +
+    `${String(date.getMilliseconds()).padStart(3, '0')}`
+  );
+}
+
 // Listar gastos con filtros opcionales (fecha_inicio, fecha_fin, categoria_id)
 async function getGastos(req, res) {
   try {
@@ -76,8 +87,8 @@ async function createGasto(req, res) {
       return res.status(400).json({ error: 'El monto es obligatorio y debe ser mayor que 0' });
     }
 
-    // Fecha actual por defecto
-    const gastoFecha = fecha ? new Date(fecha).toISOString() : new Date().toISOString();
+    // Fecha actual por defecto (en hora local, no UTC)
+    const gastoFecha = fecha ? toLocalISOString(new Date(fecha)) : toLocalISOString(new Date());
     const catId = categoria_id ? parseInt(categoria_id, 10) : null;
     const parsedMonto = parseFloat(monto);
 
@@ -119,7 +130,7 @@ async function createGasto(req, res) {
       FROM gastos
       WHERE fecha >= $1 AND fecha <= $2 AND usuario_id = $3
     `;
-    const sumParams = [todayStart.toISOString(), todayEnd.toISOString(), userId];
+    const sumParams = [toLocalISOString(todayStart), toLocalISOString(todayEnd), userId];
 
     const sumRes = await db.query(sumTodayQuery, sumParams);
     const totalHoy = parseFloat(sumRes.rows[0]?.total_hoy || 0);

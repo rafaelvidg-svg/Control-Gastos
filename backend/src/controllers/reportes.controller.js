@@ -1,21 +1,34 @@
 const db = require('../db');
 
-// Función auxiliar para calcular rangos de fechas según tipo
+// Devuelve una fecha ISO usando la hora local del sistema (no UTC)
+// Esto evita que gastos registrados de noche se salten de período por diferencia de zona horaria
+function toLocalISOString(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.` +
+    `${String(date.getMilliseconds()).padStart(3, '0')}`
+  );
+}
+
+// Función auxiliar para calcular rangos de fechas según tipo (en hora LOCAL)
 function getDateRange(tipo) {
   const now = new Date();
-  let startDate = new Date();
-  let endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  // Usamos getFullYear/Month/Date que devuelven valores en hora local
+  let startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  let endDate   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
   switch (tipo) {
     case 'diario':
-      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      // startDate ya está configurada como inicio del día local
       break;
-    case 'semanal':
-      // Inicio de la semana actual (Lunes)
-      const day = now.getDay();
+    case 'semanal': {
+      // Inicio de la semana actual (Lunes) en hora local
+      const day = now.getDay(); // 0=Dom, 1=Lun … 6=Sáb
       const diff = now.getDate() - day + (day === 0 ? -6 : 1);
       startDate = new Date(now.getFullYear(), now.getMonth(), diff, 0, 0, 0, 0);
       break;
+    }
     case 'mensual':
       // Inicio del mes actual
       startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
@@ -58,7 +71,7 @@ async function getReportes(req, res) {
        LEFT JOIN categorias c ON g.categoria_id = c.id
        WHERE g.fecha >= $1 AND g.fecha <= $2 AND g.usuario_id = $3
        ORDER BY g.fecha ASC`,
-      [startDate.toISOString(), endDate.toISOString(), userId]
+      [toLocalISOString(startDate), toLocalISOString(endDate), userId]
     );
 
     const gastos = gastosRes.rows.map(g => ({
@@ -157,8 +170,8 @@ async function getReportes(req, res) {
     return res.json({
       periodo: {
         tipo,
-        fecha_inicio: startDate.toISOString(),
-        fecha_fin: endDate.toISOString(),
+        fecha_inicio: toLocalISOString(startDate),
+        fecha_fin: toLocalISOString(endDate),
       },
       resumen: {
         total_general: parseFloat(total_general.toFixed(2)),
