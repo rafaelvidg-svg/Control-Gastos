@@ -219,18 +219,18 @@ function executeLocalFallback(text, params) {
 
   // 5.1 SELECT SUM(monto) as total_hoy
   if (cleanSql.includes('TOTAL_HOY') || (cleanSql.includes('SUM(') && cleanSql.includes('FROM GASTOS'))) {
-    const startDate = params[0] ? new Date(params[0]) : null;
-    const endDate = params[1] ? new Date(params[1]) : null;
+    const startTs = params[0] ? new Date(params[0]).getTime() : null;
+    const endTs   = params[1] ? new Date(params[1]).getTime() : null;
     const uId = params[2] !== undefined ? parseInt(params[2], 10) : null;
 
     let filtered = localData.gastos;
     if (uId !== null && !isNaN(uId)) {
       filtered = filtered.filter((g) => g.usuario_id === uId);
     }
-    if (startDate && endDate) {
+    if (startTs !== null && endTs !== null) {
       filtered = filtered.filter((g) => {
-        const d = new Date(g.fecha);
-        return d >= startDate && d <= endDate;
+        const ts = new Date(g.fecha).getTime();
+        return ts >= startTs && ts <= endTs;
       });
     }
     const totalHoy = filtered.reduce((acc, curr) => acc + (parseFloat(curr.monto) || 0), 0);
@@ -251,14 +251,14 @@ function executeLocalFallback(text, params) {
 
     // Reportes query: WHERE g.fecha >= $1 AND g.fecha <= $2 AND g.usuario_id = $3
     if (cleanSql.includes('FECHA >=') && cleanSql.includes('FECHA <=') && params.length >= 3) {
-      const startDate = new Date(params[0]);
-      const endDate = new Date(params[1]);
+      const startTs = new Date(params[0]).getTime();
+      const endTs   = new Date(params[1]).getTime();
       const uId = parseInt(params[2], 10);
       rows = rows.filter((g) => {
-        const d = new Date(g.fecha);
-        return g.usuario_id === uId && d >= startDate && d <= endDate;
+        const ts = new Date(g.fecha).getTime();
+        return g.usuario_id === uId && ts >= startTs && ts <= endTs;
       });
-      rows.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+      rows.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
       return { rows };
     }
 

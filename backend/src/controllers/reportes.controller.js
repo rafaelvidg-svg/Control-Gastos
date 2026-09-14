@@ -71,7 +71,7 @@ async function getReportes(req, res) {
        LEFT JOIN categorias c ON g.categoria_id = c.id
        WHERE g.fecha >= $1 AND g.fecha <= $2 AND g.usuario_id = $3
        ORDER BY g.fecha ASC`,
-      [toLocalISOString(startDate), toLocalISOString(endDate), userId]
+      [startDate.toISOString(), endDate.toISOString(), userId]
     );
 
     const gastos = gastosRes.rows.map(g => ({
@@ -170,8 +170,8 @@ async function getReportes(req, res) {
     return res.json({
       periodo: {
         tipo,
-        fecha_inicio: toLocalISOString(startDate),
-        fecha_fin: toLocalISOString(endDate),
+        fecha_inicio: startDate.toISOString(),
+        fecha_fin: endDate.toISOString(),
       },
       resumen: {
         total_general: parseFloat(total_general.toFixed(2)),
