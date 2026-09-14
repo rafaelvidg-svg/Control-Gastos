@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
   PieChart as PieIcon, 
