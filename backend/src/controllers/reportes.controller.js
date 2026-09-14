@@ -36,10 +36,15 @@ function getDateRange(tipo) {
 async function getReportes(req, res) {
   try {
     const tipo = (req.query.tipo || 'mensual').toLowerCase();
-    const userId = req.user ? req.user.id : null;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Debes iniciar sesión para consultar tus reportes' });
+    }
+
     const { startDate, endDate } = getDateRange(tipo);
 
-    // 1. Obtener todos los gastos del período
+    // 1. Obtener todos los gastos del período pertenecientes exclusivamente al usuario
     const gastosRes = await db.query(
       `SELECT 
          g.id, 
@@ -51,10 +56,9 @@ async function getReportes(req, res) {
          COALESCE(c.color, '#6B7280') AS categoria_color
        FROM gastos g
        LEFT JOIN categorias c ON g.categoria_id = c.id
-       WHERE g.fecha >= $1 AND g.fecha <= $2
-       ${userId ? 'AND (g.usuario_id = $3 OR g.usuario_id IS NULL)' : ''}
+       WHERE g.fecha >= $1 AND g.fecha <= $2 AND g.usuario_id = $3
        ORDER BY g.fecha ASC`,
-      userId ? [startDate.toISOString(), endDate.toISOString(), userId] : [startDate.toISOString(), endDate.toISOString()]
+      [startDate.toISOString(), endDate.toISOString(), userId]
     );
 
     const gastos = gastosRes.rows.map(g => ({

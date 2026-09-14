@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config();
 
 // Configuración de PostgreSQL
@@ -215,6 +217,26 @@ function executeLocalFallback(text, params) {
     return { rows: [newGasto], rowCount: 1 };
   }
 
+  // 5.1 SELECT SUM(monto) as total_hoy
+  if (cleanSql.includes('TOTAL_HOY') || (cleanSql.includes('SUM(') && cleanSql.includes('FROM GASTOS'))) {
+    const startDate = params[0] ? new Date(params[0]) : null;
+    const endDate = params[1] ? new Date(params[1]) : null;
+    const uId = params[2] !== undefined ? parseInt(params[2], 10) : null;
+
+    let filtered = localData.gastos;
+    if (uId !== null && !isNaN(uId)) {
+      filtered = filtered.filter((g) => g.usuario_id === uId);
+    }
+    if (startDate && endDate) {
+      filtered = filtered.filter((g) => {
+        const d = new Date(g.fecha);
+        return d >= startDate && d <= endDate;
+      });
+    }
+    const totalHoy = filtered.reduce((acc, curr) => acc + (parseFloat(curr.monto) || 0), 0);
+    return { rows: [{ total_hoy: totalHoy }] };
+  }
+
   // 6. SELECT gastos
   if (cleanSql.startsWith('SELECT') && cleanSql.includes('FROM GASTOS')) {
     let rows = localData.gastos.map((g) => {
@@ -227,20 +249,45 @@ function executeLocalFallback(text, params) {
       };
     });
 
-    // Filtro por usuario
-    if (params.length > 0 && typeof params[0] === 'number') {
-      const uId = params[0];
-      rows = rows.filter((g) => g.usuario_id === uId || !g.usuario_id);
-    }
-
-    // Filtros por fecha si existen
-    if (cleanSql.includes('FECHA >=') && params.length >= 3) {
-      const fromDate = new Date(params[1]);
-      const toDate = new Date(params[2]);
+    // Reportes query: WHERE g.fecha >= $1 AND g.fecha <= $2 AND g.usuario_id = $3
+    if (cleanSql.includes('FECHA >=') && cleanSql.includes('FECHA <=') && params.length >= 3) {
+      const startDate = new Date(params[0]);
+      const endDate = new Date(params[1]);
+      const uId = parseInt(params[2], 10);
       rows = rows.filter((g) => {
         const d = new Date(g.fecha);
-        return d >= fromDate && d <= toDate;
+        return g.usuario_id === uId && d >= startDate && d <= endDate;
       });
+      rows.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+      return { rows };
+    }
+
+    // Standard getGastos query: WHERE g.usuario_id = $1 ...
+    if (cleanSql.includes('USUARIO_ID = $1') || (params.length > 0 && typeof params[0] === 'number')) {
+      const uId = parseInt(params[0], 10);
+      rows = rows.filter((g) => g.usuario_id === uId);
+
+      let nextIdx = 1;
+      if (cleanSql.includes('FECHA >= $')) {
+        const fromDate = new Date(params[nextIdx]);
+        rows = rows.filter((g) => new Date(g.fecha) >= fromDate);
+        nextIdx++;
+      }
+      if (cleanSql.includes('FECHA <= $')) {
+        const toDate = new Date(params[nextIdx]);
+        rows = rows.filter((g) => new Date(g.fecha) <= toDate);
+        nextIdx++;
+      }
+      if (cleanSql.includes('CATEGORIA_ID = $')) {
+        const catId = parseInt(params[nextIdx], 10);
+        rows = rows.filter((g) => g.categoria_id === catId);
+        nextIdx++;
+      }
+    } else if (cleanSql.includes('USUARIO_ID =')) {
+      const uId = params.find((p) => typeof p === 'number');
+      if (uId !== undefined) {
+        rows = rows.filter((g) => g.usuario_id === uId);
+      }
     }
 
     rows.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
@@ -250,9 +297,19 @@ function executeLocalFallback(text, params) {
   // 7. DELETE FROM gastos
   if (cleanSql.startsWith('DELETE FROM GASTOS')) {
     const id = parseInt(params[0], 10);
-    localData.gastos = localData.gastos.filter((g) => g.id !== id);
+    const userId = params[1] !== undefined ? parseInt(params[1], 10) : null;
+    const initialLen = localData.gastos.length;
+
+    localData.gastos = localData.gastos.filter((g) => {
+      if (userId !== null && !isNaN(userId)) {
+        return !(g.id === id && g.usuario_id === userId);
+      }
+      return g.id !== id;
+    });
+
+    const deletedCount = initialLen - localData.gastos.length;
     saveLocalData();
-    return { rowCount: 1, rows: [] };
+    return { rowCount: deletedCount, rows: [] };
   }
 
   // 8. Auth / Usuarios

@@ -60,6 +60,7 @@ export default function App() {
           <GastosView
             categorias={categorias}
             onGastoChange={handleGastoChange}
+            onOpenAuth={() => setIsAuthOpen(true)}
           />
         )}
 
@@ -71,7 +72,7 @@ export default function App() {
         )}
 
         {activeTab === 'reportes' && (
-          <ReportesView key={refreshKey} />
+          <ReportesView key={refreshKey} onOpenAuth={() => setIsAuthOpen(true)} />
         )}
       </main>
 

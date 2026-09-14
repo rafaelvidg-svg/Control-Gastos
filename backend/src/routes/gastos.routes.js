@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const gastosController = require('../controllers/gastos.controller');
-const { optionalToken } = require('../middleware/auth');
+const { verifyToken } = require('../middleware/auth');
 
-// Listar gastos con filtros opcionales por rango de fecha
-router.get('/', optionalToken, gastosController.getGastos);
+// Listar gastos pertenecientes al usuario autenticado
+router.get('/', verifyToken, gastosController.getGastos);
 
-// Registrar nuevo gasto
-router.post('/', optionalToken, gastosController.createGasto);
+// Registrar nuevo gasto para el usuario autenticado
+router.post('/', verifyToken, gastosController.createGasto);
 
-// Eliminar un gasto
-router.delete('/:id', optionalToken, gastosController.deleteGasto);
+// Eliminar un gasto perteneciente al usuario autenticado
+router.delete('/:id', verifyToken, gastosController.deleteGasto);
 
 module.exports = router;

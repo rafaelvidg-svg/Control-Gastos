@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
   PieChart as PieIcon, 
@@ -10,7 +9,9 @@ import {
   TrendingDown, 
   DollarSign, 
   Hash, 
-  Sparkles 
+  Sparkles,
+  Lock,
+  LogIn
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -27,6 +28,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -39,13 +41,20 @@ ChartJS.register(
   ArcElement
 );
 
-export default function ReportesView() {
+export default function ReportesView({ onOpenAuth }) {
+  const { user } = useAuth();
   const [tipo, setTipo] = useState('mensual'); // diario | semanal | mensual | anual
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const fetchReport = async () => {
+    if (!user) {
+      setReportData(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
@@ -53,7 +62,7 @@ export default function ReportesView() {
       setReportData(data);
     } catch (err) {
       console.error(err);
-      setError('Error al obtener los datos del reporte.');
+      setError(err.message || 'Error al obtener los datos del reporte.');
     } finally {
       setLoading(false);
     }
@@ -61,7 +70,7 @@ export default function ReportesView() {
 
   useEffect(() => {
     fetchReport();
-  }, [tipo]);
+  }, [tipo, user]);
 
   // Exportar a PDF usando jsPDF y autotable
   const exportPDF = () => {
@@ -295,10 +304,17 @@ export default function ReportesView() {
       {/* Encabezado y Filtros */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-            <span>Reportes y Analítica Financiera</span>
-            <Sparkles className="w-5 h-5 text-indigo-500" />
-          </h1>
+          <div className="flex items-center space-x-2.5">
+            <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+              <span>Reportes y Analítica Financiera</span>
+              <Sparkles className="w-5 h-5 text-indigo-500" />
+            </h1>
+            {user && (
+              <span className="text-[11px] font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-md">
+                {user.nombre}
+              </span>
+            )}
+          </div>
           <p className="text-sm text-slate-500 mt-1">
             Visualiza métricas agregadas, comparativas temporales y distribución porcentual de tus gastos.
           </p>
@@ -350,7 +366,27 @@ export default function ReportesView() {
         </div>
       </div>
 
-      {loading ? (
+      {!user ? (
+        <div className="py-20 text-center space-y-4 max-w-md mx-auto bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <Lock className="w-7 h-7" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-800 text-lg">Inicia sesión para ver tus reportes</h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Las estadísticas y gráficos financieros se calculan exclusivamente a partir de tus gastos personales.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            className="inline-flex items-center space-x-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-200 transition"
+          >
+            <LogIn className="w-4 h-4" />
+            <span>Iniciar Sesión / Registrarme</span>
+          </button>
+        </div>
+      ) : loading ? (
         <div className="py-24 text-center text-slate-400 font-medium text-sm">
           Generando estadísticas del período...
         </div>

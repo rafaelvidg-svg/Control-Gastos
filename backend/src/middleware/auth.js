@@ -1,6 +1,11 @@
 const jwt = require('jsonwebtoken');
+const path = require('path');
+const dotenv = require('dotenv');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'control_gastos_jwt_secret_key_2025';
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
+const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_jwt_key_gastos_app_2025';
 
 function verifyToken(req, res, next) {
   const authHeader = req.headers['authorization'];

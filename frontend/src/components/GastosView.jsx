@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { 
   PlusCircle, 
   Trash2, 
@@ -8,15 +7,18 @@ import {
   DollarSign, 
   Filter, 
   RotateCcw, 
-  ArrowDownCircle,
-  Clock,
-  Sparkles
+  ArrowDownCircle, 
+  Clock, 
+  Sparkles,
+  Lock,
+  LogIn,
+  User
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-export default function GastosView({ categorias = [], onGastoChange }) {
-  const { checkDailyLimitAlert, dailyLimit } = useAuth();
+export default function GastosView({ categorias = [], onGastoChange, onOpenAuth }) {
+  const { user, checkDailyLimitAlert, dailyLimit } = useAuth();
 
   // Helper para obtener fecha local en formato YYYY-MM-DD
   const getTodayString = () => {
@@ -49,8 +51,14 @@ export default function GastosView({ categorias = [], onGastoChange }) {
     categoria_id: '',
   });
 
-  // Cargar gastos
+  // Cargar gastos del usuario logeado
   const loadGastos = async () => {
+    if (!user) {
+      setGastos([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setErrorMsg('');
@@ -67,7 +75,7 @@ export default function GastosView({ categorias = [], onGastoChange }) {
       checkDailyLimitAlert(totalHoy, dailyLimit);
     } catch (err) {
       console.error(err);
-      setErrorMsg('No se pudieron cargar los gastos.');
+      setErrorMsg(err.message || 'No se pudieron cargar los gastos.');
     } finally {
       setLoading(false);
     }
@@ -75,11 +83,18 @@ export default function GastosView({ categorias = [], onGastoChange }) {
 
   useEffect(() => {
     loadGastos();
-  }, [filtros]);
+  }, [filtros, user]);
 
   // Manejar envío del formulario de registro
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!user) {
+      setErrorMsg('Debes iniciar sesión para que el gasto quede guardado en tu cuenta.');
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
+
     if (!formData.monto || parseFloat(formData.monto) <= 0) {
       setErrorMsg('Por favor introduce un monto válido mayor a 0');
       return;
@@ -97,7 +112,7 @@ export default function GastosView({ categorias = [], onGastoChange }) {
         fecha: formData.fecha || new Date().toISOString(),
       });
 
-      setSuccessMsg('¡Gasto registrado con éxito!');
+      setSuccessMsg(`¡Gasto registrado exitosamente para ${user.nombre}!`);
 
       // Actualizar alerta con la respuesta del backend si el límite fue superado
       if (response.alerta_limite) {
@@ -168,11 +183,18 @@ export default function GastosView({ categorias = [], onGastoChange }) {
         {/* Formulario de Registro (4 columnas en pantallas grandes) */}
         <div className="lg:col-span-4">
           <div className="glass-card rounded-2xl p-6 shadow-sm sticky top-24 border border-slate-200">
-            <div className="flex items-center space-x-2.5 pb-4 border-b border-slate-100 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <PlusCircle className="w-5 h-5" />
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <PlusCircle className="w-5 h-5" />
+                </div>
+                <h2 className="text-base font-bold text-slate-800">Nuevo Gasto</h2>
               </div>
-              <h2 className="text-base font-bold text-slate-800">Nuevo Gasto</h2>
+              {user && (
+                <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-semibold max-w-[120px] truncate" title={user.nombre}>
+                  {user.nombre}
+                </span>
+              )}
             </div>
 
             {errorMsg && (
@@ -278,13 +300,39 @@ export default function GastosView({ categorias = [], onGastoChange }) {
                 </div>
               </div>
 
+              {!user && (
+                <div className="p-3 bg-indigo-50/80 border border-indigo-100 rounded-xl text-xs text-indigo-800 flex items-center justify-between gap-2">
+                  <span>Debes iniciar sesión para que el gasto quede en tu cuenta.</span>
+                  <button
+                    type="button"
+                    onClick={onOpenAuth}
+                    className="font-bold underline text-indigo-600 hover:text-indigo-800 shrink-0"
+                  >
+                    Ingresar
+                  </button>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full mt-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 hover:shadow-lg transition-all flex items-center justify-center space-x-2 disabled:opacity-60"
+                className={`w-full mt-2 py-3 px-4 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 disabled:opacity-60 ${
+                  user
+                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200 hover:shadow-lg'
+                    : 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-200'
+                }`}
               >
-                <PlusCircle className="w-5 h-5" />
-                <span>{submitting ? 'Registrando...' : 'Registrar Gasto'}</span>
+                {user ? (
+                  <>
+                    <PlusCircle className="w-5 h-5" />
+                    <span>{submitting ? 'Registrando...' : 'Registrar Gasto'}</span>
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-5 h-5" />
+                    <span>Iniciar Sesión para Registrar</span>
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -367,14 +415,39 @@ export default function GastosView({ categorias = [], onGastoChange }) {
           <div className="glass-panel rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-800 text-sm">Historial de Transacciones</h3>
+              {user && (
+                <span className="text-[11px] font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-md">
+                  Gastos de {user.nombre}
+                </span>
+              )}
             </div>
 
-            {loading ? (
+            {!user ? (
+              <div className="py-16 text-center space-y-4 px-6">
+                <div className="w-12 h-12 mx-auto rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-800 text-base">Inicia sesión para ver tus gastos</h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+                    Tus gastos son personales y privados. Ingresa con tu cuenta personal para ver tu historial de gastos.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpenAuth}
+                  className="inline-flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-200 transition"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Iniciar Sesión / Registrarme</span>
+                </button>
+              </div>
+            ) : loading ? (
               <div className="py-12 text-center text-slate-400 text-sm">Cargando registros...</div>
             ) : gastos.length === 0 ? (
               <div className="py-16 text-center text-slate-400 space-y-3">
                 <ArrowDownCircle className="w-10 h-10 mx-auto opacity-40 text-slate-400" />
-                <p className="text-sm font-medium">No se encontraron gastos para el período seleccionado.</p>
+                <p className="text-sm font-medium">No tienes gastos registrados para el período seleccionado.</p>
                 <p className="text-xs text-slate-400">¡Registra un nuevo gasto desde el formulario a la izquierda!</p>
               </div>
             ) : (

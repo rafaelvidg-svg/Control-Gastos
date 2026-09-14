@@ -90,7 +90,7 @@
       "descripcion": "Compra de despensa semanal",
       "fecha": "2026-09-13T00:00:00.000Z",
       "categoria_id": 1,
-      "usuario_id": null,
+      "usuario_id": 1,
       "created_at": "2026-09-13T19:46:35.986Z"
     },
     {
@@ -99,7 +99,7 @@
       "descripcion": "Prueba de gasto",
       "fecha": "2026-09-13T19:41:48.380Z",
       "categoria_id": 1,
-      "usuario_id": null,
+      "usuario_id": 1,
       "created_at": "2026-09-13T19:41:48.380Z"
     },
     {

@@ -4,7 +4,11 @@ const db = require('../db');
 async function getGastos(req, res) {
   try {
     const { fecha_inicio, fecha_fin, categoria_id } = req.query;
-    const userId = req.user ? req.user.id : null;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Acceso no autorizado: Usuario no identificado' });
+    }
 
     let queryText = `
       SELECT 
@@ -20,16 +24,10 @@ async function getGastos(req, res) {
         c.icono AS categoria_icono
       FROM gastos g
       LEFT JOIN categorias c ON g.categoria_id = c.id
-      WHERE 1=1
+      WHERE g.usuario_id = $1
     `;
-    const params = [];
-    let paramIndex = 1;
-
-    if (userId) {
-      queryText += ` AND (g.usuario_id = $${paramIndex} OR g.usuario_id IS NULL)`;
-      params.push(userId);
-      paramIndex++;
-    }
+    const params = [userId];
+    let paramIndex = 2;
 
     if (fecha_inicio) {
       queryText += ` AND g.fecha >= $${paramIndex}`;
@@ -68,7 +66,11 @@ async function getGastos(req, res) {
 async function createGasto(req, res) {
   try {
     const { monto, descripcion, categoria_id, fecha } = req.body;
-    const userId = req.user ? req.user.id : null;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Debes iniciar sesión para registrar gastos' });
+    }
 
     if (!monto || isNaN(monto) || parseFloat(monto) <= 0) {
       return res.status(400).json({ error: 'El monto es obligatorio y debe ser mayor que 0' });
@@ -101,14 +103,12 @@ async function createGasto(req, res) {
     let alertaLimite = null;
     let limiteDiario = 100.00;
 
-    if (userId) {
-      const userRes = await db.query('SELECT limite_diario FROM usuarios WHERE id = $1', [userId]);
-      if (userRes.rows.length > 0 && userRes.rows[0].limite_diario) {
-        limiteDiario = parseFloat(userRes.rows[0].limite_diario);
-      }
+    const userRes = await db.query('SELECT limite_diario FROM usuarios WHERE id = $1', [userId]);
+    if (userRes.rows.length > 0 && userRes.rows[0].limite_diario) {
+      limiteDiario = parseFloat(userRes.rows[0].limite_diario);
     }
 
-    // Sumar gastos de hoy (UTC / local)
+    // Sumar gastos de hoy del usuario exclusivamente
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date();
@@ -117,11 +117,9 @@ async function createGasto(req, res) {
     const sumTodayQuery = `
       SELECT COALESCE(SUM(monto), 0) as total_hoy
       FROM gastos
-      WHERE fecha >= $1 AND fecha <= $2 ${userId ? 'AND (usuario_id = $3 OR usuario_id IS NULL)' : ''}
+      WHERE fecha >= $1 AND fecha <= $2 AND usuario_id = $3
     `;
-    const sumParams = userId
-      ? [todayStart.toISOString(), todayEnd.toISOString(), userId]
-      : [todayStart.toISOString(), todayEnd.toISOString()];
+    const sumParams = [todayStart.toISOString(), todayEnd.toISOString(), userId];
 
     const sumRes = await db.query(sumTodayQuery, sumParams);
     const totalHoy = parseFloat(sumRes.rows[0]?.total_hoy || 0);
@@ -153,19 +151,18 @@ async function deleteGasto(req, res) {
   try {
     const { id } = req.params;
     const gastoId = parseInt(id, 10);
-    const userId = req.user ? req.user.id : null;
+    const userId = req.user?.id;
 
-    let queryText = 'DELETE FROM gastos WHERE id = $1';
-    let params = [gastoId];
-
-    if (userId) {
-      queryText += ' AND (usuario_id = $2 OR usuario_id IS NULL)';
-      params.push(userId);
+    if (!userId) {
+      return res.status(401).json({ error: 'Debes iniciar sesión para eliminar gastos' });
     }
+
+    const queryText = 'DELETE FROM gastos WHERE id = $1 AND usuario_id = $2';
+    const params = [gastoId, userId];
 
     const result = await db.query(queryText, params);
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Gasto no encontrado' });
+      return res.status(404).json({ error: 'Gasto no encontrado o no pertenece a tu usuario' });
     }
 
     return res.json({ message: 'Gasto eliminado exitosamente', id: gastoId });
